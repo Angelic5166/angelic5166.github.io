@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/aquor-design-system-fb15e1ba-f913-4e96-aafc-547169241505/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/aquor-design-system-fb15e1ba-f913-4e96-aafc-547169241505/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/aquor-design-system-fb15e1ba-f913-4e96-aafc-547169241505/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/aquor-design-system-fb15e1ba-f913-4e96-aafc-547169241505/tokens/base.css">
+  <link rel="stylesheet" href="_ds/aquor-design-system-fb15e1ba-f913-4e96-aafc-547169241505/styles.css">
+  <script src="_ds/aquor-design-system-fb15e1ba-f913-4e96-aafc-547169241505/_ds_bundle.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body { margin: 0; background: var(--surface-page); }
+    a { color: var(--text-link); text-decoration: none; }
+    a:hover { color: var(--text-link-hover); }
+    ::placeholder { color: var(--neutral-600); }
+  </style>
+</helmet>
+
+<div ref="{{ setRootRef }}" style="font-family: var(--font-body); color: var(--text-primary); min-height: 100vh; display: flex; flex-direction: column;">
+
+  <sc-if value="{{ notExporting }}" hint-placeholder-val="{{ true }}">
+  <div style="background: var(--neutral-100); border-bottom: 1px solid var(--neutral-300); padding: 8px 32px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+    <span style="font-size: 14px; font-weight: 700; color: var(--water-ink);">Aquor Storefront Editor</span>
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; overflow-x: auto;">
+    <sc-if value="{{ onPdpView }}" hint-placeholder-val="{{ false }}">
+      <x-import component-from-global-scope="AquorDesignSystem_fb15e1.Button" variant="{{ pdpEditBtnVariant }}" size="sm" onClick="{{ togglePdpEditing }}" hint-size="auto,36px"><img src="assets/edit-icon.png" alt="" style="width: 13px; height: 13px; vertical-align: -1px; margin-right: 6px; filter: {{ pdpEditIconFilter }};">{{ pdpEditBtnLabel }}</x-import>
+    </sc-if>
+    <sc-if value="{{ onCollectionView }}" hint-placeholder-val="{{ true }}">
+    <x-import component-from-global-scope="AquorDesignSystem_fb15e1.Button" variant="{{ manageBtnVariant }}" size="sm" onClick="{{ toggleManaging }}" hint-size="auto,36px"><img src="assets/edit-icon.png" alt="" style="width: 13px; height: 13px; vertical-align: -1px; margin-right: 6px; filter: {{ manageIconFilter }};">{{ manageBtnLabel }}</x-import>
+    <x-import component-from-global-scope="AquorDesignSystem_fb15e1.Button" variant="primary" size="sm" onClick="{{ openAdd }}" hint-size="auto,36px">+ Add Product</x-import>
+    </sc-if>
+    <x-import component-from-global-scope="AquorDesignSystem_fb15e1.Button" variant="secondary" size="sm" onClick="{{ saveView }}" hint-size="auto,36px"><span style="white-space: nowrap;">{{ saveViewLabel }}</span></x-import>
+    <div style="width: 1px; height: 20px; background: var(--neutral-300); margin: 0 4px; flex-shrink: 0;"></div>
+    <span onClick="{{ setViewCollection }}" style="font-size: 14px; font-weight: {{ viewCollectionWeight }}; color: {{ viewCollectionColor }}; cursor: pointer; border-bottom: 2px solid {{ viewCollectionUnderline }}; padding-bottom: 2px; white-space: nowrap; flex-shrink: 0;">Collection View</span>
+    <span onClick="{{ setViewPdp }}" style="font-size: 14px; font-weight: {{ viewPdpWeight }}; color: {{ viewPdpColor }}; cursor: pointer; border-bottom: 2px solid {{ viewPdpUnderline }}; padding-bottom: 2px; white-space: nowrap; flex-shrink: 0;">Product Page View</span>
+    <div style="width: 1px; height: 20px; background: var(--neutral-300); margin: 0 4px; flex-shrink: 0;"></div>
+    <div style="position: relative;">
+      <x-import component-from-global-scope="AquorDesignSystem_fb15e1.Button" variant="secondary" size="sm" onClick="{{ toggleShare }}" hint-size="auto,36px"><img src="assets/share-icon.png" alt="" style="width: 14px; height: 14px; vertical-align: -2px; margin-right: 6px;">Share</x-import>
+      <sc-if value="{{ shareOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position: absolute; top: 40px; right: 0; background: #fff; border: 1px solid var(--neutral-300); border-radius: var(--radius-sm); box-shadow: 0 4px 16px rgba(0,0,0,0.12); min-width: 180px; z-index: 30; overflow: hidden;">
+          <div onClick="{{ exportPdf }}" style="padding: 10px 14px; font-size: 14px; cursor: pointer; border-bottom: 1px solid var(--neutral-100);">Download as PDF</div>
+          <div onClick="{{ exportJpg }}" style="padding: 10px 14px; font-size: 14px; cursor: pointer;">Download as JPG</div>
+        </div>
+      </sc-if>
+    </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <div style="background: var(--water-ink); color: #fff; text-align: center; padding: 10px 16px; font-size: var(--text-p2-size);">
+    <strong>Free shipping</strong> on orders <strong>$250+</strong> (US only, exclusions apply)
+  </div>
+
+  <header style="position: sticky; top: 0; z-index: 20; background: #fff; border-bottom: 1px solid var(--neutral-100);">
+    <div style="max-width: var(--container-max); margin: 0 auto; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px;">
+      <img src="assets/aquor-logo-primary.png" alt="Aquor Water Systems" style="height: 28px;">
+      <nav style="display: flex; gap: 10px; font-size: 14px; font-weight: 500; flex: 1; justify-content: center; align-items: center; flex-wrap: nowrap; min-width: 0;">
+        <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="6">
+          <div style="position: relative; display: flex; align-items: center; flex-shrink: 0; white-space: nowrap;">
+            <sc-if value="{{ navEditing }}" hint-placeholder-val="{{ false }}">
+              <input value="{{ item.label }}" onChange="{{ item._edit }}" style="width: {{ item.inputWidth }}px; font: inherit; font-weight: 500; color: {{ item.color }}; border: 1px solid var(--neutral-300); border-radius: var(--radius-sm); padding: 4px 6px; background: #fff; white-space: nowrap;">
+              <span onClick="{{ item._delete }}" style="margin-left: 4px; cursor: pointer; color: var(--status-danger); font-size: 14px;">×</span>
+            </sc-if>
+            <sc-if value="{{ navEditingOff }}" hint-placeholder-val="{{ true }}">
+              <span onClick="{{ item._toggleMenu }}" style="color: {{ item.color }}; font-weight: {{ item.fontWeight }}; padding: 4px 6px; white-space: nowrap; cursor: {{ item.menuCursor }}; display: flex; align-items: center; gap: 5px; border-bottom: 2px solid {{ item.underlineColor }};">
+                <sc-if value="{{ item.hasAmp }}" hint-placeholder-val="{{ false }}">
+                  {{ item.beforeAmp }} <span style="font-family: 'Helvetica Neue', Arial, sans-serif;">&amp;</span> {{ item.afterAmp }}
+                </sc-if>
+                <sc-if value="{{ item.noAmp }}" hint-placeholder-val="{{ true }}">
+                  {{ item.label }}
+                </sc-if>
+                <sc-if value="{{ item.hasMenu }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size: 10px; transform: {{ item.chevronTransform }}; display: inline-block;">▾</span>
+                </sc-if>
+              </span>
+            </sc-if>
+          </div>
+        </sc-for>
+        <sc-if value="{{ navEditing }}" hint-placeholder-val="{{ false }}">
+          <span onClick="{{ addNavItem }}" style="cursor: pointer; color: var(--water-blue); font-size: 14px; font-weight: 600; padding: 0 6px;">+ Add</span>
+        </sc-if>
+      </nav>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <x-import component-from-global-scope="AquorDesignSystem_fb15e1.IconButton" aria-label="search" variant="ghost" hint-size="40px,40px">🔍</x-import>
+        <x-import component-from-global-scope="AquorDesignSystem_fb15e1.IconButton" aria-label="cart" variant="secondary" hint-size="40px,40px">🛒</x-import>
+      </div>
+    </div>
+    <sc-if value="{{ accessoriesMenuOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="border-top: 1px solid var(--neutral-100); background: #fff;">
+        <div style="max-width: var(--container-max); margin: 0 auto; padding: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+          <div>
+            <div style="font-size: 14px; color: var(--neutral-600); margin-bottom: 16px;">Accessories</div>
+            <div style="display: flex; flex-direction: column; gap: 18px;">
+              <sc-for list="{{ accessoryCategories }}" as="cat" hint-placeholder-count="5">
+                <div onClick="{{ cat._select }}" style="font-size: 18px; font-weight: 700; color: {{ cat.color }}; cursor: pointer; width: fit-content; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;">
+                  <sc-if value="{{ cat.hasAmp }}" hint-placeholder-val="{{ false }}">{{ cat.beforeAmp }} <span style="font-family: 'Helvetica Neue', Arial, sans-serif;">&amp;</span> {{ cat.afterAmp }}</sc-if>
+                  <sc-if value="{{ cat.noAmp }}" hint-placeholder-val="{{ true }}">{{ cat.label }}</sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 14px; color: var(--neutral-600); margin-bottom: 16px;">Featured Accessories</div>
+            <div style="display: flex; align-items: center; gap: 8px; width: 220px;">
+              <div style="aspect-ratio: 1/1; width: 100%; background: var(--neutral-100); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--neutral-600); font-size: 13px;">Product photo</div>
+            </div>
+            <div style="font-size: 16px; font-weight: 700; color: var(--water-ink); margin-top: 12px;">Starter Garden Bundle</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </header>
+
+  <div style="max-width: var(--container-max); margin: 0 auto; padding: 24px 32px 0; width: 100%; box-sizing: border-box;">
+    <sc-if value="{{ onHydrantsPage }}" hint-placeholder-val="{{ true }}">
+      <div style="font-size: var(--text-p2-size); color: var(--neutral-600);">
+        Home <span style="margin: 0 6px;">/</span> <span style="color: var(--text-primary);">Hydrants <span style="font-family: 'Helvetica Neue', Arial, sans-serif;">&amp;</span> Valves</span>
+      </div>
+      <h1 style="font-size: 45px; font-weight: 650; letter-spacing: 0; line-height: 1; margin: 16px 0 8px; color: var(--water-ink);">Hydrants <span style="font-family: 'Helvetica Neue', Arial, sans-serif;">&amp;</span> Valves</h1>
+    </sc-if>
+    <sc-if value="{{ onAccessoriesPage }}" hint-placeholder-val="{{ false }}">
+      <div style="font-size: var(--text-p2-size); color: var(--neutral-600);">
+        <span onClick="{{ goHome }}" style="cursor: pointer;">Home</span> <span style="margin: 0 6px;">/</span> <span onClick="{{ goHome }}" style="cursor: pointer;">Accessories</span> <span style="margin: 0 6px;">/</span> <span style="color: var(--text-primary);">
+          <sc-if value="{{ accessoryTitleHasAmp }}" hint-placeholder-val="{{ false }}">{{ accessoryTitleBefore }} <span style="font-family: 'Helvetica Neue', Arial, sans-serif;">&amp;</span> {{ accessoryTitleAfter }}</sc-if>
+          <sc-if value="{{ accessoryTitleNoAmp }}" hint-placeholder-val="{{ true }}">{{ accessoryPageTitle }}</sc-if>
+        </span>
+      </div>
+      <h1 style="font-size: 45px; font-weight: 650; letter-spacing: 0; line-height: 1; margin: 16px 0 8px; color: var(--water-ink);">
+        <sc-if value="{{ accessoryTitleHasAmp }}" hint-placeholder-val="{{ false }}">{{ accessoryTitleBefore }} <span style="font-family: 'Helvetica Neue', Arial, sans-serif;">&amp;</span> {{ accessoryTitleAfter }}</sc-if>
+        <sc-if value="{{ accessoryTitleNoAmp }}" hint-placeholder-val="{{ true }}">{{ accessoryPageTitle }}</sc-if>
+      </h1>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ onHydrantsPage }}" hint-placeholder-val="{{ true }}">
+
+  <div style="max-width: var(--container-max); margin: 0 auto; padding: 20px 32px 0; width: 100%; box-sizing: border-box;">
+    <div onClick="{{ toggleFiltersOpen }}" style="display: flex; align-items: center; gap: 10px; cursor: pointer; width: fit-content; padding-bottom: 16px;">
+      <span style="color: var(--water-ink); display: inline-flex;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="18" x2="20" y2="18"></line><circle cx="9" cy="6" r="1.5" fill="currentColor" stroke="none"></circle><circle cx="15" cy="12" r="1.5" fill="currentColor" stroke="none"></circle><circle cx="9" cy="18" r="1.5" fill="currentColor" stroke="none"></circle></svg></span>
+      <span style="font-size: 16px; font-weight: 700; line-height: 1.3; color: var(--water-ink);">Filter</span>
+      <span style="font-size: 12px; color: var(--water-ink); transform: {{ filtersChevronTransform }}; display: inline-block;">▾</span>
+      <span style="font-size: 14px; font-weight: 400; line-height: 1.4; color: var(--neutral-600); margin-left: 4px;">{{ countText }}</span>
+    </div>
+
+    <sc-if value="{{ filtersOpen }}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-bottom: 8px;">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; min-width: 0;">
+          <sc-for list="{{ filterGroups }}" as="grp" hint-placeholder-count="4">
+            <div style="position: relative; flex-shrink: 0;">
+              <div onClick="{{ grp._toggleOpen }}" style="display: flex; align-items: center; gap: 6px; border: 1px solid {{ grp.borderColor }}; border-radius: 0; padding: 8px 12px; cursor: pointer; background: #fff;">
+                <span style="font-size: 13px; font-weight: 600; color: var(--water-ink);">{{ grp.title }}</span>
+                <span style="font-size: 11px; color: var(--neutral-600);">{{ grp.chevron }}</span>
+              </div>
+              <sc-if value="{{ grp.open }}" hint-placeholder-val="{{ false }}">
+                <div style="position: absolute; top: calc(100% + 1px); left: 0; z-index: 10; width: 260px; background: #fff; border: 1px solid var(--water-ink); border-radius: 0; box-shadow: var(--shadow-raised);">
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--neutral-100); font-size: 14px; color: var(--text-primary);">
+                    <span>{{ grp.selectedCount }} selected</span>
+                    <span onClick="{{ grp._clear }}" style="color: var(--neutral-600); cursor: pointer; text-decoration: underline;">Clear</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column; padding: 12px 16px; gap: 14px; max-height: 320px; overflow-y: auto;">
+                    <sc-for list="{{ grp.options }}" as="opt" hint-placeholder-count="4">
+                      <label style="display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 400; line-height: 1.4; color: var(--text-primary); cursor: pointer;">
+                        <input type="checkbox" checked="{{ opt.checked }}" onChange="{{ opt._toggle }}" style="accent-color: var(--water-blue); width: 17px; height: 17px;">
+                        <span>{{ opt.label }} <span style="color: var(--neutral-600);">({{ opt.count }})</span></span>
+                      </label>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px; position: relative; flex-shrink: 0;">
+          <div onClick="{{ toggleSortOpen }}" style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px; color: var(--water-ink); white-space: nowrap; flex-shrink: 0;">
+            <span>Sort: {{ sortLabel }}</span>
+            <span style="font-size: 11px; color: var(--neutral-600);">{{ sortChevron }}</span>
+          </div>
+          <sc-if value="{{ sortOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; top: calc(100% + 6px); right: 0; z-index: 10; width: 220px; background: #fff; border: 1px solid var(--neutral-300); border-radius: 0; box-shadow: var(--shadow-raised); overflow: hidden;">
+              <sc-for list="{{ sortMenuOptions }}" as="so" hint-placeholder-count="6">
+                <div onClick="{{ so._select }}" style="padding: 10px 16px; font-size: 14px; color: var(--text-primary); cursor: pointer; background: {{ so.bg }};">{{ so.label }}</div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="max-width: var(--container-max); margin: 0 auto; padding: 8px 32px 64px; width: 100%; box-sizing: border-box; border-top: 1px solid var(--neutral-100); padding-top: 16px;">
+
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px 20px;">
+      <sc-for list="{{ products }}" as="p" hint-placeholder-count="16">
+        <div style="position: relative;">
+          <sc-if value="{{ managing }}" hint-placeholder-val="{{ false }}">
+            <span onClick="{{ p._delete }}" style="position: absolute; top: -8px; right: -8px; z-index: 3; width: 26px; height: 26px; border-radius: 50%; background: var(--status-danger); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 15px; cursor: pointer; box-shadow: var(--shadow-card);" style-hover="background:#b80000;">×</span>
+          </sc-if>
+          <div style="position: relative; aspect-ratio: 1/1; border-radius: var(--radius-md); background: var(--neutral-100); overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            <sc-if value="{{ p.badge }}" hint-placeholder-val="{{ false }}">
+              <span style="position: absolute; top: 10px; left: 10px; z-index: 2; background: {{ p.badgeColor }}; color: #fff; font-size: var(--text-s5-size); font-weight: var(--text-s5-weight); letter-spacing: var(--text-s5-tracking); text-transform: uppercase; border-radius: var(--radius-md); padding: 6px 8px;">{{ p.badge }}</span>
+            </sc-if>
+            <sc-if value="{{ p.noImage }}" hint-placeholder-val="{{ true }}">
+              <span style="position: absolute; z-index: 1; color: var(--neutral-600); font-size: 13px;">Product photo</span>
+            </sc-if>
+            <img ref="{{ p._imgRef }}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="" style="width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 2; display: {{ p.imgDisplay }};">
+            <sc-if value="{{ managing }}" hint-placeholder-val="{{ false }}">
+              <label style="position: absolute; bottom: 8px; right: 8px; z-index: 3; width: 30px; height: 30px; border-radius: 50%; background: rgba(37,45,55,0.85); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-card);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                <input type="file" accept="image/*" onChange="{{ p._replaceImage }}" style="display: none;">
+              </label>
+            </sc-if>
+          </div>
+          <div style="margin-top: 12px; text-align: center;">
+            <div style="font-size: 16px; font-weight: 700; color: var(--water-ink); line-height: 1.3;">{{ p.name }}</div>
+            <sc-if value="{{ p.ratingText }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size: 13px; color: var(--neutral-600); margin-top: 4px;">★ {{ p.ratingText }}</div>
+            </sc-if>
+            <div style="font-size: 14px; font-weight: 400; line-height: 1.4; color: var(--neutral-600); margin-top: 4px;">{{ p.price }}</div>
+          </div>
+        </div>
+      </sc-for>
+
+      <sc-if value="{{ managing }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ openAdd }}" style="aspect-ratio: 1/1; border-radius: var(--radius-md); border: 2px dashed var(--neutral-300); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; color: var(--neutral-600);" style-hover="border-color:var(--water-blue);color:var(--water-blue);">
+          <span style="font-size: 32px; line-height: 1;">+</span>
+          <span style="font-size: 14px; font-weight: 600;">Add Product</span>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ onAccessoriesPage }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width: var(--container-max); margin: 0 auto; padding: 8px 32px 64px; width: 100%; box-sizing: border-box; border-top: 1px solid var(--neutral-100); padding-top: 28px;">
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px 20px;">
+        <sc-for list="{{ accessoryProducts }}" as="ap" hint-placeholder-count="8">
+          <div>
+            <div style="position: relative; aspect-ratio: 1/1; border-radius: var(--radius-md); background: var(--neutral-100); overflow: hidden; display: flex; align-items: center; justify-content: center;">
+              <span style="color: var(--neutral-600); font-size: 13px;">Product photo</span>
+            </div>
+            <div style="margin-top: 12px; text-align: center;">
+              <div style="font-size: 16px; font-weight: 700; color: var(--water-ink); line-height: 1.3;">
+                <sc-if value="{{ ap.hasAmp }}" hint-placeholder-val="{{ false }}">{{ ap.beforeAmp }} <span style="font-family: 'Helvetica Neue', Arial, sans-serif;">&amp;</span> {{ ap.afterAmp }}</sc-if>
+                <sc-if value="{{ ap.noAmp }}" hint-placeholder-val="{{ true }}">{{ ap.name }}</sc-if>
+              </div>
+              <div style="font-size: 14px; font-weight: 400; line-height: 1.4; color: var(--neutral-600); margin-top: 4px;">{{ ap.price }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ onPdpView }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width: var(--container-max); margin: 0 auto; padding: 24px 32px 64px; width: 100%; box-sizing: border-box;">
+      <div style="font-size: var(--text-p2-size); color: var(--neutral-600); margin-bottom: 16px;">
+        <span onClick="{{ goHome }}" style="cursor: pointer;">Home</span> <span style="margin: 0 6px;">/</span>
+        <span onClick="{{ setViewCollection }}" style="cursor: pointer;">Hydrants <span style="font-family: 'Helvetica Neue', Arial, sans-serif;">&amp;</span> Valves</span> <span style="margin: 0 6px;">/</span>
+        <span style="color: var(--text-primary);">{{ pdpTitle }}</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 90px 1fr 1fr; gap: 24px; align-items: start;">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="position: relative; aspect-ratio: 1/1; border-radius: var(--radius-sm); border: 1px solid var(--neutral-300); background: var(--neutral-100); overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            <sc-if value="{{ pdpThumb0NoImage }}" hint-placeholder-val="{{ true }}">
+              <span style="position: absolute; z-index: 1; color: var(--neutral-600); font-size: 9px; text-align: center;">Product photo</span>
+            </sc-if>
+            <img ref="{{ pdpThumbRef0 }}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="" style="width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 2; display: {{ pdpThumb0Display }};">
+            <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}">
+              <label style="position: absolute; inset: 0; background: rgba(37,45,55,0.55); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px;">Edit<input type="file" accept="image/*" onChange="{{ replacePdpThumb0 }}" style="display: none;"></label>
+            </sc-if>
+          </div>
+          <div style="position: relative; aspect-ratio: 1/1; border-radius: var(--radius-sm); border: 1px solid var(--neutral-300); background: var(--neutral-100); overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            <sc-if value="{{ pdpThumb1NoImage }}" hint-placeholder-val="{{ true }}">
+              <span style="position: absolute; z-index: 1; color: var(--neutral-600); font-size: 9px; text-align: center;">Product photo</span>
+            </sc-if>
+            <img ref="{{ pdpThumbRef1 }}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="" style="width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 2; display: {{ pdpThumb1Display }};">
+            <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}">
+              <label style="position: absolute; inset: 0; background: rgba(37,45,55,0.55); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px;">Edit<input type="file" accept="image/*" onChange="{{ replacePdpThumb1 }}" style="display: none;"></label>
+            </sc-if>
+          </div>
+          <div style="position: relative; aspect-ratio: 1/1; border-radius: var(--radius-sm); border: 1px solid var(--neutral-300); background: var(--neutral-100); overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            <sc-if value="{{ pdpThumb2NoImage }}" hint-placeholder-val="{{ true }}">
+              <span style="position: absolute; z-index: 1; color: var(--neutral-600); font-size: 9px; text-align: center;">Product photo</span>
+            </sc-if>
+            <img ref="{{ pdpThumbRef2 }}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="" style="width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 2; display: {{ pdpThumb2Display }};">
+            <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}">
+              <label style="position: absolute; inset: 0; background: rgba(37,45,55,0.55); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px;">Edit<input type="file" accept="image/*" onChange="{{ replacePdpThumb2 }}" style="display: none;"></label>
+            </sc-if>
+          </div>
+          <div style="position: relative; aspect-ratio: 1/1; border-radius: var(--radius-sm); border: 1px solid var(--neutral-300); background: var(--neutral-100); overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            <sc-if value="{{ pdpThumb3NoImage }}" hint-placeholder-val="{{ true }}">
+              <span style="position: absolute; z-index: 1; color: var(--neutral-600); font-size: 9px; text-align: center;">Product photo</span>
+            </sc-if>
+            <img ref="{{ pdpThumbRef3 }}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="" style="width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 2; display: {{ pdpThumb3Display }};">
+            <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}">
+              <label style="position: absolute; inset: 0; background: rgba(37,45,55,0.55); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px;">Edit<input type="file" accept="image/*" onChange="{{ replacePdpThumb3 }}" style="display: none;"></label>
+            </sc-if>
+          </div>
+        </div>
+        <div style="position: relative; aspect-ratio: 1/1; border-radius: var(--radius-md); background: var(--neutral-100); overflow: hidden; display: flex; align-items: center; justify-content: center;">
+          <sc-if value="{{ pdpMainNoImage }}" hint-placeholder-val="{{ true }}">
+            <span style="position: absolute; z-index: 1; color: var(--neutral-600); font-size: 14px;">Product photo</span>
+          </sc-if>
+          <img ref="{{ pdpMainImgRef }}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="" style="width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 2; display: {{ pdpMainImgDisplay }};">
+          <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}">
+            <label style="position: absolute; z-index: 3; bottom: 10px; right: 10px; width: 34px; height: 34px; border-radius: 50%; background: rgba(37,45,55,0.85); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+              <input type="file" accept="image/*" onChange="{{ replacePdpMainImage }}" style="display: none;">
+            </label>
+          </sc-if>
+        </div>
+        <div>
+          <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}"><input value="{{ pdpTitle }}" onChange="{{ editPdpTitle }}" style="display: block; width: 100%; font-family: var(--font-body); font-size: 32px; font-weight: 700; color: var(--water-ink); margin: 0 0 12px; border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; padding: 2px 4px;"></sc-if><sc-if value="{{ pdpEditingOff }}" hint-placeholder-val="{{ true }}"><h1 style="font-size: 32px; font-weight: 700; color: var(--water-ink); margin: 0 0 12px;">{{ pdpTitle }}</h1></sc-if>
+          <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}"><textarea value="{{ pdpDesc1 }}" onChange="{{ editPdpDesc1 }}" style="display: block; width: 100%; font-family: var(--font-body); font-size: 15px; line-height: 1.55; color: var(--text-primary); margin: 0 0 16px; border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; padding: 4px 6px; resize: vertical;"></textarea></sc-if><sc-if value="{{ pdpEditingOff }}" hint-placeholder-val="{{ true }}"><p style="font-size: 15px; line-height: 1.55; color: var(--text-primary); margin: 0 0 16px;">{{ pdpDesc1 }}</p></sc-if>
+          <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}"><textarea value="{{ pdpDesc2 }}" onChange="{{ editPdpDesc2 }}" style="display: block; width: 100%; font-family: var(--font-body); font-size: 13px; line-height: 1.5; color: var(--neutral-600); margin: 0 0 20px; border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; padding: 4px 6px; resize: vertical;"></textarea></sc-if><sc-if value="{{ pdpEditingOff }}" hint-placeholder-val="{{ true }}"><p style="font-size: 13px; line-height: 1.5; color: var(--neutral-600); margin: 0 0 20px;">{{ pdpDesc2 }}</p></sc-if>
+          <div style="font-size: 13px; color: var(--neutral-600); margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">SKU: <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}"><input value="{{ pdpSku }}" onChange="{{ editPdpSku }}" style="font-family: var(--font-body); font-size: 13px; color: var(--neutral-600); border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; padding: 2px 4px; width: 100px;"></sc-if><sc-if value="{{ pdpEditingOff }}" hint-placeholder-val="{{ true }}">{{ pdpSku }}</sc-if></div>
+          <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px;">
+            <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}">
+            <input value="{{ pdpPrice }}" onChange="{{ editPdpPrice }}" style="font-family: var(--font-body); font-size: 22px; font-weight: 700; color: var(--water-ink); border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; padding: 2px 4px; width: 110px;">
+            <span style="font-size: 14px; color: var(--neutral-600); display: flex; align-items: center; gap: 4px;">★ <input value="{{ pdpRatingValue }}" onChange="{{ editPdpRatingValue }}" style="font-family: var(--font-body); font-size: 14px; color: var(--neutral-600); border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; padding: 2px 4px; width: 40px;"> &middot; <input value="{{ pdpReviewCount }}" onChange="{{ editPdpReviewCount }}" style="font-family: var(--font-body); font-size: 14px; color: var(--neutral-600); border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; padding: 2px 4px; width: 40px;"> reviews</span>
+            </sc-if>
+            <sc-if value="{{ pdpEditingOff }}" hint-placeholder-val="{{ true }}">
+            <span style="font-size: 22px; font-weight: 700; color: var(--water-ink);">{{ pdpPrice }}</span>
+            <span style="font-size: 14px; color: var(--neutral-600);">★ {{ pdpRatingValue }} &middot; {{ pdpReviewCount }} reviews</span>
+            </sc-if>
+          </div>
+          <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">Color: {{ pdpColor }}</div>
+          <div style="display: flex; gap: 14px; margin-bottom: 20px; flex-wrap: wrap; align-items: flex-start;">
+            <sc-for list="{{ pdpColors }}" as="c" hint-placeholder-count="2">
+              <sc-if value="{{ pdpEditingOff }}" hint-placeholder-val="{{ true }}">
+                <div onClick="{{ c._select }}" style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: {{ c.swatch }}; border: 2px solid {{ c.borderColor }}; cursor: pointer;"></div>
+              </sc-if>
+              <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                  <div style="position: relative;">
+                    <input type="color" value="{{ c.swatch }}" onChange="{{ c._editSwatch }}" style="width: 36px; height: 36px; border-radius: var(--radius-sm); border: 2px solid var(--water-blue); padding: 0; cursor: pointer;">
+                    <span onClick="{{ c._delete }}" style="position: absolute; top: -8px; right: -8px; width: 18px; height: 18px; border-radius: 50%; background: var(--status-danger); color: #fff; font-size: 11px; display: flex; align-items: center; justify-content: center; cursor: pointer;">×</span>
+                  </div>
+                  <input value="{{ c.label }}" onChange="{{ c._editLabel }}" style="width: 90px; font-family: var(--font-body); font-size: 11px; text-align: center; border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; padding: 2px;">
+                </div>
+              </sc-if>
+            </sc-for>
+            <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}">
+              <div onClick="{{ addPdpColor }}" style="width: 36px; height: 36px; border-radius: var(--radius-sm); border: 2px dashed var(--neutral-300); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--neutral-600); font-size: 18px;">+</div>
+            </sc-if>
+          </div>
+          <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; border: 1px solid var(--neutral-300); border-radius: var(--radius-md);">
+              <span onClick="{{ decQty }}" style="width: 36px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px;">-</span>
+              <span style="width: 32px; text-align: center; font-size: 15px;">{{ pdpQty }}</span>
+              <span onClick="{{ incQty }}" style="width: 36px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px;">+</span>
+            </div>
+          </div>
+          <x-import component-from-global-scope="AquorDesignSystem_fb15e1.Button" variant="primary" size="lg" hint-size="100%,52px" style="width: 100%; margin-bottom: 20px;">{{ pdpAddOnCartLabel }}</x-import>
+          <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 16px; border-top: 1px solid var(--neutral-100);">
+            <div style="font-size: 14px; color: var(--text-primary);">✓ ASSE &amp; CSA Certified</div>
+            <div style="font-size: 14px; color: var(--text-primary);">✓ Limited Lifetime Warranty</div>
+            <div style="font-size: 14px; color: var(--text-primary);">✓ Free Shipping in US over $250</div>
+            <div style="font-size: 14px; color: var(--text-primary);">✓ Est. Delivery in 3-10 Business Days</div>
+          </div>
+          <div style="margin-top: 24px; display: flex; flex-direction: column;">
+            <div style="border-top: 1px solid var(--neutral-100);">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 0; font-size: 15px; font-weight: 600; color: var(--water-ink); gap: 8px;">
+                <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}"><input value="{{ pdpIncludedTitle }}" onChange="{{ editPdpIncludedTitle }}" style="flex: 1; font-family: var(--font-body); font-size: 15px; font-weight: 600; color: var(--water-ink); border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; padding: 2px 4px;"></sc-if><sc-if value="{{ pdpEditingOff }}" hint-placeholder-val="{{ true }}"><span onClick="{{ togglePdpIncluded }}" style="cursor: pointer; flex: 1;">{{ pdpIncludedTitle }}</span></sc-if>
+                <span onClick="{{ togglePdpIncluded }}" style="cursor: pointer;">{{ pdpIncludedToggle }}</span>
+              </div>
+              <sc-if value="{{ pdpIncludedOpen }}" hint-placeholder-val="{{ false }}">
+                <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}"><textarea value="{{ pdpIncludedBody }}" onChange="{{ editPdpIncludedBody }}" style="display: block; width: 100%; font-family: var(--font-body); font-size: 14px; line-height: 1.5; color: var(--neutral-600); padding: 4px 6px; padding-bottom: 16px; border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; resize: vertical;"></textarea></sc-if><sc-if value="{{ pdpEditingOff }}" hint-placeholder-val="{{ true }}"><div style="font-size: 14px; line-height: 1.5; color: var(--neutral-600); padding-bottom: 16px;">{{ pdpIncludedBody }}</div></sc-if>
+              </sc-if>
+            </div>
+            <div style="border-top: 1px solid var(--neutral-100);">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 0; font-size: 15px; font-weight: 600; color: var(--water-ink); gap: 8px;">
+                <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}"><input value="{{ pdpInstallTitle }}" onChange="{{ editPdpInstallTitle }}" style="flex: 1; font-family: var(--font-body); font-size: 15px; font-weight: 600; color: var(--water-ink); border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; padding: 2px 4px;"></sc-if><sc-if value="{{ pdpEditingOff }}" hint-placeholder-val="{{ true }}"><span onClick="{{ togglePdpInstall }}" style="cursor: pointer; flex: 1;">{{ pdpInstallTitle }}</span></sc-if>
+                <span onClick="{{ togglePdpInstall }}" style="cursor: pointer;">{{ pdpInstallToggle }}</span>
+              </div>
+              <sc-if value="{{ pdpInstallOpen }}" hint-placeholder-val="{{ false }}">
+                <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}"><textarea value="{{ pdpInstallBody }}" onChange="{{ editPdpInstallBody }}" style="display: block; width: 100%; font-family: var(--font-body); font-size: 14px; line-height: 1.5; color: var(--neutral-600); padding: 4px 6px; padding-bottom: 16px; border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; resize: vertical;"></textarea></sc-if><sc-if value="{{ pdpEditingOff }}" hint-placeholder-val="{{ true }}"><div style="font-size: 14px; line-height: 1.5; color: var(--neutral-600); padding-bottom: 16px;">{{ pdpInstallBody }}</div></sc-if>
+              </sc-if>
+            </div>
+            <div style="border-top: 1px solid var(--neutral-100);">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 0; font-size: 15px; font-weight: 600; color: var(--water-ink); gap: 8px;">
+                <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}"><input value="{{ pdpSpecsTitle }}" onChange="{{ editPdpSpecsTitle }}" style="flex: 1; font-family: var(--font-body); font-size: 15px; font-weight: 600; color: var(--water-ink); border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; padding: 2px 4px;"></sc-if><sc-if value="{{ pdpEditingOff }}" hint-placeholder-val="{{ true }}"><span onClick="{{ togglePdpSpecs }}" style="cursor: pointer; flex: 1;">{{ pdpSpecsTitle }}</span></sc-if>
+                <span onClick="{{ togglePdpSpecs }}" style="cursor: pointer;">{{ pdpSpecsToggle }}</span>
+              </div>
+              <sc-if value="{{ pdpSpecsOpen }}" hint-placeholder-val="{{ false }}">
+                <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}"><textarea value="{{ pdpSpecsBody }}" onChange="{{ editPdpSpecsBody }}" style="display: block; width: 100%; font-family: var(--font-body); font-size: 14px; line-height: 1.5; color: var(--neutral-600); padding: 4px 6px; padding-bottom: 16px; border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; resize: vertical;"></textarea></sc-if><sc-if value="{{ pdpEditingOff }}" hint-placeholder-val="{{ true }}"><div style="font-size: 14px; line-height: 1.5; color: var(--neutral-600); padding-bottom: 16px;">{{ pdpSpecsBody }}</div></sc-if>
+              </sc-if>
+            </div>
+            <div style="border-top: 1px solid var(--neutral-100);">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 0; font-size: 15px; font-weight: 600; color: var(--water-ink); gap: 8px;">
+                <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}"><input value="{{ pdpCadTitle }}" onChange="{{ editPdpCadTitle }}" style="flex: 1; font-family: var(--font-body); font-size: 15px; font-weight: 600; color: var(--water-ink); border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; padding: 2px 4px;"></sc-if><sc-if value="{{ pdpEditingOff }}" hint-placeholder-val="{{ true }}"><span onClick="{{ togglePdpCad }}" style="cursor: pointer; flex: 1;">{{ pdpCadTitle }}</span></sc-if>
+                <span onClick="{{ togglePdpCad }}" style="cursor: pointer;">{{ pdpCadToggle }}</span>
+              </div>
+              <sc-if value="{{ pdpCadOpen }}" hint-placeholder-val="{{ false }}">
+                <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}"><textarea value="{{ pdpCadBody }}" onChange="{{ editPdpCadBody }}" style="display: block; width: 100%; font-family: var(--font-body); font-size: 14px; line-height: 1.5; color: var(--neutral-600); padding: 4px 6px; padding-bottom: 16px; border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; resize: vertical;"></textarea></sc-if><sc-if value="{{ pdpEditingOff }}" hint-placeholder-val="{{ true }}"><div style="font-size: 14px; line-height: 1.5; color: var(--neutral-600); padding-bottom: 16px;">{{ pdpCadBody }}</div></sc-if>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 56px; text-align: center;">
+        <div style="font-size: 20px; font-weight: 700; color: var(--water-ink); margin-bottom: 6px;">Complete Your Setup</div>
+        <div style="font-size: 14px; color: var(--neutral-600); margin-bottom: 24px;">We recommend these add-ons to get the most out of your system.</div>
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; text-align: left;">
+          <div>
+            <div style="aspect-ratio: 1/1; background: var(--neutral-100); border-radius: var(--radius-md); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: var(--neutral-600); font-size: 12px;">Product photo</div>
+            <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}"><input value="{{ pdpAddon1 }}" onChange="{{ editPdpAddon1 }}" style="width: 100%; font-family: var(--font-body); font-size: 13px; font-weight: 600; color: var(--water-ink); margin-bottom: 8px; border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; padding: 2px 4px;"></sc-if><sc-if value="{{ pdpEditingOff }}" hint-placeholder-val="{{ true }}"><div style="font-size: 13px; font-weight: 600; color: var(--water-ink); margin-bottom: 8px;">{{ pdpAddon1 }}</div></sc-if>
+            <x-import component-from-global-scope="AquorDesignSystem_fb15e1.Button" variant="primary" size="sm" hint-size="100%,36px" style="width: 100%;">Add to Cart</x-import>
+          </div>
+          <div>
+            <div style="aspect-ratio: 1/1; background: var(--neutral-100); border-radius: var(--radius-md); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: var(--neutral-600); font-size: 12px;">Product photo</div>
+            <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}"><input value="{{ pdpAddon2 }}" onChange="{{ editPdpAddon2 }}" style="width: 100%; font-family: var(--font-body); font-size: 13px; font-weight: 600; color: var(--water-ink); margin-bottom: 8px; border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; padding: 2px 4px;"></sc-if><sc-if value="{{ pdpEditingOff }}" hint-placeholder-val="{{ true }}"><div style="font-size: 13px; font-weight: 600; color: var(--water-ink); margin-bottom: 8px;">{{ pdpAddon2 }}</div></sc-if>
+            <x-import component-from-global-scope="AquorDesignSystem_fb15e1.Button" variant="primary" size="sm" hint-size="100%,36px" style="width: 100%;">Add to Cart</x-import>
+          </div>
+          <div>
+            <div style="aspect-ratio: 1/1; background: var(--neutral-100); border-radius: var(--radius-md); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: var(--neutral-600); font-size: 12px;">Product photo</div>
+            <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}"><input value="{{ pdpAddon3 }}" onChange="{{ editPdpAddon3 }}" style="width: 100%; font-family: var(--font-body); font-size: 13px; font-weight: 600; color: var(--water-ink); margin-bottom: 8px; border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; padding: 2px 4px;"></sc-if><sc-if value="{{ pdpEditingOff }}" hint-placeholder-val="{{ true }}"><div style="font-size: 13px; font-weight: 600; color: var(--water-ink); margin-bottom: 8px;">{{ pdpAddon3 }}</div></sc-if>
+            <x-import component-from-global-scope="AquorDesignSystem_fb15e1.Button" variant="primary" size="sm" hint-size="100%,36px" style="width: 100%;">Add to Cart</x-import>
+          </div>
+          <div>
+            <div style="aspect-ratio: 1/1; background: var(--neutral-100); border-radius: var(--radius-md); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: var(--neutral-600); font-size: 12px;">Product photo</div>
+            <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}"><input value="{{ pdpAddon4 }}" onChange="{{ editPdpAddon4 }}" style="width: 100%; font-family: var(--font-body); font-size: 13px; font-weight: 600; color: var(--water-ink); margin-bottom: 8px; border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; padding: 2px 4px;"></sc-if><sc-if value="{{ pdpEditingOff }}" hint-placeholder-val="{{ true }}"><div style="font-size: 13px; font-weight: 600; color: var(--water-ink); margin-bottom: 8px;">{{ pdpAddon4 }}</div></sc-if>
+            <x-import component-from-global-scope="AquorDesignSystem_fb15e1.Button" variant="primary" size="sm" hint-size="100%,36px" style="width: 100%;">Add to Cart</x-import>
+          </div>
+          <div>
+            <div style="aspect-ratio: 1/1; background: var(--neutral-100); border-radius: var(--radius-md); margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: var(--neutral-600); font-size: 12px;">Product photo</div>
+            <sc-if value="{{ pdpEditing }}" hint-placeholder-val="{{ false }}"><input value="{{ pdpAddon5 }}" onChange="{{ editPdpAddon5 }}" style="width: 100%; font-family: var(--font-body); font-size: 13px; font-weight: 600; color: var(--water-ink); margin-bottom: 8px; border: 1px solid var(--water-blue); background: #fff; border-radius: 4px; padding: 2px 4px;"></sc-if><sc-if value="{{ pdpEditingOff }}" hint-placeholder-val="{{ true }}"><div style="font-size: 13px; font-weight: 600; color: var(--water-ink); margin-bottom: 8px;">{{ pdpAddon5 }}</div></sc-if>
+            <x-import component-from-global-scope="AquorDesignSystem_fb15e1.Button" variant="primary" size="sm" hint-size="100%,36px" style="width: 100%;">Add to Cart</x-import>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <footer style="background: var(--water-ink); color: #fff; margin-top: auto;">
+    <div style="max-width: var(--container-max); margin: 0 auto; padding: 48px 32px 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; font-size: 14px;">
+      <div>
+        <div style="font-weight: 700; margin-bottom: 12px;">Shop</div>
+        <div style="display: flex; flex-direction: column; gap: 8px; color: rgba(255,255,255,0.75);">
+          <span>Kits <span style="font-family: 'Helvetica Neue', Arial, sans-serif;">&amp;</span> Bundles</span><span>Hydrants <span style="font-family: 'Helvetica Neue', Arial, sans-serif;">&amp;</span> Valves</span><span>Lawn <span style="font-family: 'Helvetica Neue', Arial, sans-serif;">&amp;</span> Garden</span><span>Accessories</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-weight: 700; margin-bottom: 12px;">Company</div>
+        <div style="display: flex; flex-direction: column; gap: 8px; color: rgba(255,255,255,0.75);">
+          <span>Our Blog</span><span>Our Story</span><span>Why Aquor?</span><span>Our Partners</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-weight: 700; margin-bottom: 12px;">Support</div>
+        <div style="display: flex; flex-direction: column; gap: 8px; color: rgba(255,255,255,0.75);">
+          <span>Shipping Policy</span><span>Return <span style="font-family: 'Helvetica Neue', Arial, sans-serif;">&amp;</span> Exchange Policy</span><span>Warranty</span><span>FAQ</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-weight: 700; margin-bottom: 12px;">For Pros</div>
+        <div style="display: flex; flex-direction: column; gap: 8px; color: rgba(255,255,255,0.75);">
+          <span>Join the Pro Trade Program</span><span>CAD <span style="font-family: 'Helvetica Neue', Arial, sans-serif;">&amp;</span> Design Files Request</span><span>Product Catalog</span>
+        </div>
+      </div>
+    </div>
+    <div style="border-top: 1px solid rgba(255,255,255,0.15); padding: 16px 32px; max-width: var(--container-max); margin: 0 auto; font-size: 13px; color: rgba(255,255,255,0.6);">© Aquor Water Systems 2026</div>
+  </footer>
+
+  <sc-if value="{{ addOpen }}" hint-placeholder-val="{{ false }}">
+    <x-import component-from-global-scope="AquorDesignSystem_fb15e1.Dialog" open="{{ addOpen }}" onClose="{{ closeAdd }}" title="Add Product Listing" hint-size="480px,auto">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <x-import component-from-global-scope="AquorDesignSystem_fb15e1.Input" label="Product name" placeholder="e.g. House Hydrant V3" value="{{ formName }}" onChange="{{ onFormNameChange }}" hint-size="100%,72px"></x-import>
+        <x-import component-from-global-scope="AquorDesignSystem_fb15e1.Input" label="Price" placeholder="e.g. $125.00" value="{{ formPrice }}" onChange="{{ onFormPriceChange }}" hint-size="100%,72px"></x-import>
+        <label style="display: flex; flex-direction: column; gap: 6px; font-family: var(--font-body); width: 100%;">
+          <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Product image</span>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="position: relative; width: 64px; height: 64px; border-radius: var(--radius-md); background: var(--neutral-100); overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <sc-if value="{{ formImageEmpty }}" hint-placeholder-val="{{ true }}">
+                <span style="position: absolute; z-index: 1; color: var(--neutral-600); font-size: 10px;">No image</span>
+              </sc-if>
+              <img ref="{{ formImgRef }}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="" style="width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 2; display: {{ formImgDisplay }};">
+            </div>
+            <input type="file" accept="image/*" onChange="{{ onFormImageChange }}" style="font-size: 14px; font-family: var(--font-body); color: var(--text-primary);">
+          </div>
+        </label>
+        <x-import component-from-global-scope="AquorDesignSystem_fb15e1.Select" label="Badge" options="{{ badgeOptions }}" value="{{ formBadge }}" onChange="{{ onFormBadgeChange }}" hint-size="100%,72px"></x-import>
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px;">
+          <x-import component-from-global-scope="AquorDesignSystem_fb15e1.Button" variant="secondary" onClick="{{ closeAdd }}" hint-size="auto,44px">Cancel</x-import>
+          <x-import component-from-global-scope="AquorDesignSystem_fb15e1.Button" variant="primary" onClick="{{ submitAdd }}" hint-size="auto,44px">Add Product</x-import>
+        </div>
+      </div>
+    </x-import>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const PIXEL = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+
+const BADGE_COLORS = { 'New': 'var(--status-new)', 'Out of Stock': 'var(--status-danger)', 'Best Seller': 'var(--water-ink)' };
+
+const INITIAL_PRODUCTS = [
+  { id: 1, name: 'Hot+Cold Hydrant', price: '$410.00', rating: 4.6, reviews: 15, badge: null, image: null },
+  { id: 2, name: 'Hot+Cold Hydrant - Matte Black Stainless', price: '$475.00', rating: 4.6, reviews: 15, badge: null, image: null },
+  { id: 3, name: 'Hot+Cold Hydrant with 1/2" PEX Expansion 90° Elbow Inlet', price: '$410.00', rating: 4.6, reviews: 15, badge: null, image: null },
+  { id: 4, name: 'Hot+Cold Hydrant with 1/2" PEX Expansion 90° Elbow Inlet - Matte Black Stainless', price: '$475.00', rating: 4.6, reviews: 15, badge: null, image: null },
+  { id: 5, name: 'House Hydrant V1+ - Slate Gray Polymer', price: '$95.00', rating: 4.9, reviews: 94, badge: null, image: null },
+  { id: 6, name: 'Premium House Hydrant V1+ - Brushed Stainless Steel', price: '$135.00', rating: 4.9, reviews: 94, badge: null, image: null },
+  { id: 7, name: 'Premium House Hydrant V1+ - Matte Black Stainless', price: '$175.00', rating: 4.9, reviews: 94, badge: 'Best Seller', image: null },
+  { id: 8, name: 'House Hydrant V2+ - Slate Gray Polymer', price: '$150.00', rating: 5.0, reviews: 55, badge: null, image: null },
+  { id: 9, name: 'Premium House Hydrant V2+ - Brushed Stainless Steel', price: '$215.00', rating: 5.0, reviews: 55, badge: null, image: null },
+  { id: 10, name: 'Premium House Hydrant V2+ - Matte Black Stainless', price: '$245.00', rating: 5.0, reviews: 55, badge: 'Best Seller', image: null },
+  { id: 11, name: 'Ground Hydrant', price: '$135.00', rating: 5.0, reviews: 5, badge: null, image: null },
+  { id: 12, name: 'Marine Deckwash', price: '$90.00', rating: 5.0, reviews: 6, badge: null, image: null },
+  { id: 13, name: 'RV City Water Inlet', price: '$90.00', rating: 4.9, reviews: 9, badge: null, image: null },
+  { id: 14, name: 'Universal Hydrant', price: '$90.00', rating: 5.0, reviews: 3, badge: null, image: null },
+  { id: 15, name: 'Engine Flush', price: '$100.00', rating: null, reviews: null, badge: null, image: null },
+  { id: 16, name: 'Mixing Valve for RV/Marine', price: '$100.00', rating: 4.9, reviews: 16, badge: null, image: null },
+];
+
+const FILTER_GROUPS = [
+  { title: 'By Project Type', options: [
+    { label: 'Retrofit', count: 7 }, { label: 'New Construction', count: 7 }, { label: 'Tempered Water', count: 5 },
+    { label: 'Yard', count: 1 }, { label: 'Any Project', count: 2 }, { label: 'RV/Marine', count: 5 },
+  ]},
+  { title: 'Product Type', options: [
+    { label: 'House Hydrants', count: 10 }, { label: 'Other Hydrants', count: 5 }, { label: 'Parts', count: 1 }, { label: 'Bundles', count: 12 },
+  ]},
+  { title: 'Vacuum Breaker', options: [
+    { label: 'No', count: 7 }, { label: 'Yes, in faceplate', count: 7 }, { label: 'Yes, in Hose Connector', count: 12 },
+  ]},
+  { title: 'Stem Length', options: [
+    { label: '2" Stem', count: 6 }, { label: '4" Stem', count: 6 }, { label: '6" Stem', count: 6 },
+    { label: '8" Stem', count: 6 }, { label: '10" Stem', count: 6 }, { label: '12" Stem', count: 6 },
+  ]},
+];
+
+const SORT_OPTIONS = [
+  { value: 'featured', label: 'Featured' }, { value: 'best', label: 'Best selling' },
+  { value: 'az', label: 'Alphabetically, A-Z' }, { value: 'za', label: 'Alphabetically, Z-A' },
+  { value: 'low', label: 'Price, low to high' }, { value: 'high', label: 'Price, high to low' },
+];
+
+const BADGE_OPTIONS = [
+  { value: '', label: 'None' }, { value: 'New', label: 'New' },
+  { value: 'Best Seller', label: 'Best Seller' }, { value: 'Out of Stock', label: 'Out of Stock' },
+];
+
+function splitAmp(label) {
+  const i = label.indexOf(' & ');
+  if (i < 0) return { hasAmp: false, noAmp: true, beforeAmp: '', afterAmp: '' };
+  return { hasAmp: true, noAmp: false, beforeAmp: label.slice(0, i), afterAmp: label.slice(i + 3) };
+}
+
+const ACCESSORIES_CATEGORIES = ['Lawn & Garden', 'Hose Connectors', 'Debris Covers', 'Installation Parts', 'Shop All Accessories'];
+
+const INITIAL_NAV = [
+  { id: 1, label: 'Hydrants & Valves', active: true },
+  { id: 2, label: 'Accessories', active: false },
+  { id: 3, label: 'Project Type', active: false },
+  { id: 4, label: 'Kits & Bundles', active: false },
+  { id: 5, label: 'About Us', active: false },
+  { id: 6, label: 'Resources', active: false },
+];
+
+let nextId = 100;
+let nextNavId = 100;
+let nextPdpColorId = 100;
+
+class Component extends DCLogic {
+  pdpThumbEls = [null, null, null, null];
+  pdpMainImgEl = null;
+  state = {
+    products: INITIAL_PRODUCTS,
+    managing: false,
+    pdpEditing: false,
+    addOpen: false,
+    sortValue: 'featured',
+    formName: '',
+    formPrice: '',
+    formBadge: '',
+    formImage: null,
+    navItems: INITIAL_NAV,
+    navEditing: false,
+    openNavMenu: null,
+    selectedAccessoryCategory: null,
+    currentPage: 'hydrants',
+    currentView: 'collection',
+    pdpQty: 1,
+    pdpColor: 'Brushed Stainless Steel',
+    pdpColorOptions: [
+      { id: 1, label: 'Brushed Stainless Steel', swatch: '#c9cdd1' },
+      { id: 2, label: 'Matte Black Stainless', swatch: '#2a2d31' },
+    ],
+    pdpOpenIncluded: false,
+    pdpOpenInstall: false,
+    pdpOpenSpecs: false,
+    pdpOpenCad: false,
+    pdpMainImage: null,
+    pdpThumbImages: [null, null, null, null],
+    pdpTitle: 'Hot+Cold Hydrant',
+    pdpDesc1: 'Single dial quick connect Hot+Cold Hydrant with vacuum breaker and check valve. Essential for hot and cold water access year round. Front serviceability. ASSE and CSA certified. Each kit includes one hose connector and debris plug cover.',
+    pdpDesc2: 'Standard with 1/2" PEX Expansion (ProPEX) connections. 1/2" PEX Crimp Inlet Tempered Water available for PEX Crimp connections. Red Dot Design Award-winning product, recognized for excellence in innovation and design.',
+    pdpSku: 'HC1-006',
+    pdpPrice: '$410.00',
+    pdpRatingValue: '4.6',
+    pdpReviewCount: '15',
+    pdpIncludedTitle: "What's Included",
+    pdpIncludedBody: 'Hot+Cold Hydrant, brushed stainless hose connector, debris plug cover, and mounting hardware.',
+    pdpInstallTitle: 'Installation Guide',
+    pdpInstallBody: 'Designed for wall-through installation with 1/2" PEX Expansion or Crimp inlets. Full step-by-step instructions included in the box.',
+    pdpSpecsTitle: 'Tech Specs',
+    pdpSpecsBody: 'ASSE 1052 & CSA certified. Vacuum breaker in hose connector. Operating range 20-180°F.',
+    pdpCadTitle: 'CAD & Design Files',
+    pdpCadBody: 'Downloadable CAD files available for architects and contractors via the Pro Trade Program.',
+    pdpAddon1: 'Stainless Steel Mounting Box',
+    pdpAddon2: '1/2" PEX Crimp Inlet',
+    pdpAddon3: 'Garden Hose Y-Splitter',
+    pdpAddon4: 'Shower Kit',
+    pdpAddon5: 'Ultralight Garden Hose',
+    filtersOpen: true,
+    openFilterGroup: null,
+    filterSelections: {},
+    sortOpen: false,
+    savedFlash: false,
+    shareOpen: false,
+    exporting: false,
+  };
+
+  setRootRef = (el) => { this.rootEl = el; };
+
+  toggleShare = () => this.setState(s => ({ shareOpen: !s.shareOpen }));
+
+  runExport = (kind) => {
+    this.setState({ shareOpen: false, exporting: true }, () => {
+      setTimeout(() => {
+        window.html2canvas(this.rootEl, { useCORS: true, scale: 2, backgroundColor: '#ffffff' }).then((canvas) => {
+          if (kind === 'jpg') {
+            const link = document.createElement('a');
+            link.download = 'aquor-storefront.jpg';
+            link.href = canvas.toDataURL('image/jpeg', 0.92);
+            link.click();
+          } else {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
+            pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, canvas.width, canvas.height);
+            pdf.save('aquor-storefront.pdf');
+          }
+          this.setState({ exporting: false });
+        }).catch(() => this.setState({ exporting: false }));
+      }, 50);
+    });
+  };
+
+  exportJpg = () => this.runExport('jpg');
+  exportPdf = () => this.runExport('pdf');
+
+  componentDidMount() {
+    try {
+      const raw = localStorage.getItem('aquor-storefront-view');
+      if (raw) this.setState(JSON.parse(raw));
+    } catch (e) {}
+  }
+
+  saveView = () => {
+    const s = this.state;
+    const persisted = {
+      products: s.products, navItems: s.navItems, pdpTitle: s.pdpTitle, pdpDesc1: s.pdpDesc1, pdpDesc2: s.pdpDesc2,
+      pdpSku: s.pdpSku, pdpPrice: s.pdpPrice, pdpRatingValue: s.pdpRatingValue, pdpReviewCount: s.pdpReviewCount,
+      pdpIncludedTitle: s.pdpIncludedTitle, pdpIncludedBody: s.pdpIncludedBody, pdpInstallTitle: s.pdpInstallTitle,
+      pdpInstallBody: s.pdpInstallBody, pdpSpecsTitle: s.pdpSpecsTitle, pdpSpecsBody: s.pdpSpecsBody,
+      pdpCadTitle: s.pdpCadTitle, pdpCadBody: s.pdpCadBody, pdpAddon1: s.pdpAddon1, pdpAddon2: s.pdpAddon2,
+      pdpAddon3: s.pdpAddon3, pdpAddon4: s.pdpAddon4, pdpAddon5: s.pdpAddon5, pdpColorOptions: s.pdpColorOptions,
+      pdpColor: s.pdpColor, pdpMainImage: s.pdpMainImage, pdpThumbImages: s.pdpThumbImages,
+    };
+    try { localStorage.setItem('aquor-storefront-view', JSON.stringify(persisted)); } catch (e) {}
+    this.setState({ savedFlash: true });
+    setTimeout(() => this.setState({ savedFlash: false }), 1500);
+  };
+
+  toggleSortOpen = () => this.setState(s => ({ sortOpen: !s.sortOpen }));
+  selectSort = (value) => this.setState({ sortValue: value, sortOpen: false });
+  toggleFiltersOpen = () => this.setState(s => ({ filtersOpen: !s.filtersOpen }));
+  toggleFilterGroup = (idx) => this.setState(s => ({ openFilterGroup: s.openFilterGroup === idx ? null : idx }));
+  toggleFilterOption = (key) => this.setState(s => ({ filterSelections: { ...s.filterSelections, [key]: !s.filterSelections[key] } }));
+  clearFilterGroup = (idx) => this.setState(s => {
+    const sel = { ...s.filterSelections };
+    FILTER_GROUPS[idx].options.forEach((o, oi) => { delete sel[`${idx}:${oi}`]; });
+    return { filterSelections: sel };
+  });
+
+  toggleNavEditing = () => this.setState(s => ({ navEditing: !s.navEditing }));
+  toggleManagingAndNav = () => this.setState(s => ({ managing: !s.managing, navEditing: !s.managing }));
+  deleteNavItem = (id) => this.setState(s => ({ navItems: s.navItems.filter(n => n.id !== id) }));
+  editNavItem = (id, label) => this.setState(s => ({ navItems: s.navItems.map(n => n.id === id ? { ...n, label } : n) }));
+  addNavItem = () => this.setState(s => ({ navItems: [...s.navItems, { id: nextNavId++, label: 'New Link', active: false }] }));
+  toggleNavMenu = (id) => this.setState(s => ({ openNavMenu: s.openNavMenu === id ? null : id }));
+  selectAccessoryCategory = (cat) => this.setState({ selectedAccessoryCategory: cat, currentPage: 'accessories', openNavMenu: null });
+  goHome = () => this.setState({ currentPage: 'hydrants', openNavMenu: null });
+  setView = (v) => this.setState({ currentView: v });
+  setPdpQty = (delta) => this.setState(s => ({ pdpQty: Math.max(1, s.pdpQty + delta) }));
+  setPdpColor = (c) => this.setState({ pdpColor: c });
+  editPdpColorLabel = (id, e) => this.setState(s => ({ pdpColorOptions: s.pdpColorOptions.map(o => o.id === id ? { ...o, label: e.target.value } : o) }));
+  editPdpColorSwatch = (id, e) => this.setState(s => ({ pdpColorOptions: s.pdpColorOptions.map(o => o.id === id ? { ...o, swatch: e.target.value } : o) }));
+  deletePdpColor = (id) => this.setState(s => {
+    const options = s.pdpColorOptions.filter(o => o.id !== id);
+    const removed = s.pdpColorOptions.find(o => o.id === id);
+    return { pdpColorOptions: options, pdpColor: (removed && s.pdpColor === removed.label && options[0]) ? options[0].label : s.pdpColor };
+  });
+  addPdpColor = () => this.setState(s => ({ pdpColorOptions: [...s.pdpColorOptions, { id: nextPdpColorId++, label: 'New Color', swatch: '#999999' }] }));
+  editPdpField = (key) => (e) => this.setState({ [key]: e.target.value });
+  togglePdpIncluded = () => this.setState(s => ({ pdpOpenIncluded: !s.pdpOpenIncluded }));
+  togglePdpInstall = () => this.setState(s => ({ pdpOpenInstall: !s.pdpOpenInstall }));
+  togglePdpSpecs = () => this.setState(s => ({ pdpOpenSpecs: !s.pdpOpenSpecs }));
+  togglePdpCad = () => this.setState(s => ({ pdpOpenCad: !s.pdpOpenCad }));
+  replacePdpMainImage = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => this.setState({ pdpMainImage: reader.result }, () => { if (this.pdpMainImgEl) this.pdpMainImgEl.src = reader.result; });
+    reader.readAsDataURL(file);
+  };
+  replacePdpThumbImage = (idx, e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.setState(s => {
+        const imgs = [...s.pdpThumbImages];
+        imgs[idx] = reader.result;
+        return { pdpThumbImages: imgs };
+      });
+      if (this.pdpThumbEls[idx]) this.pdpThumbEls[idx].src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  toggleManaging = () => this.setState(s => ({ managing: !s.managing }));
+  togglePdpEditing = () => this.setState(s => ({ pdpEditing: !s.pdpEditing }));
+  openAdd = () => this.setState({ addOpen: true });
+  closeAdd = () => this.setState({ addOpen: false, formName: '', formPrice: '', formBadge: '', formImage: null });
+  onFormImageChange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => this.setState({ formImage: reader.result });
+    reader.readAsDataURL(file);
+  };
+  onSortChange = (e) => this.setState({ sortValue: e.target.value });
+  onFormNameChange = (e) => this.setState({ formName: e.target.value });
+  onFormPriceChange = (e) => this.setState({ formPrice: e.target.value });
+  onFormBadgeChange = (e) => this.setState({ formBadge: e.target.value });
+
+  deleteProduct = (id) => this.setState(s => ({ products: s.products.filter(p => p.id !== id) }));
+  replaceProductImage = (id, e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => this.setState(s => ({ products: s.products.map(p => p.id === id ? { ...p, image: reader.result } : p) }));
+    reader.readAsDataURL(file);
+  };
+
+  submitAdd = () => {
+    const name = this.state.formName.trim();
+    if (!name) return;
+    let price = this.state.formPrice.trim();
+    if (price && !price.startsWith('$')) price = '$' + price;
+    const newProduct = { id: nextId++, name, price: price || '$—', rating: null, reviews: null, badge: this.state.formBadge || null, image: this.state.formImage || null };
+    this.setState(s => ({ products: [...s.products, newProduct], addOpen: false, formName: '', formPrice: '', formBadge: '', formImage: null }));
+  };
+
+  renderVals() {
+    const filterGroups = FILTER_GROUPS.map((grp, gi) => {
+      const options = grp.options.map((opt, oi) => ({
+        ...opt,
+        checked: !!this.state.filterSelections[`${gi}:${oi}`],
+        _toggle: () => this.toggleFilterOption(`${gi}:${oi}`),
+      }));
+      const selectedCount = options.filter(o => o.checked).length;
+      const open = this.state.openFilterGroup === gi;
+      return {
+        title: grp.title,
+        options,
+        selectedCount,
+        open,
+        chevron: open ? '▲' : '▼',
+        borderColor: open ? 'var(--water-ink)' : 'var(--neutral-300)',
+        _toggleOpen: () => this.toggleFilterGroup(gi),
+        _clear: () => this.clearFilterGroup(gi),
+      };
+    });
+    const products = this.state.products.map(p => ({
+      ...p,
+      badgeColor: p.badge ? BADGE_COLORS[p.badge] : null,
+      ratingText: p.rating ? `${p.rating.toFixed(1)} (${p.reviews})` : null,
+      noImage: !(typeof p.image === 'string' && p.image.startsWith('data:')),
+      imgDisplay: (typeof p.image === 'string' && p.image.startsWith('data:')) ? 'block' : 'none',
+      _delete: () => this.deleteProduct(p.id),
+      _replaceImage: (e) => this.replaceProductImage(p.id, e),
+      _imgRef: (el) => { if (el) el.src = (typeof p.image === 'string' && p.image.startsWith('data:')) ? p.image : PIXEL; },
+    }));
+    const count = products.length;
+    return {
+      products,
+      filterGroups,
+      filtersOpen: this.state.filtersOpen,
+      filtersChevronTransform: this.state.filtersOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+      toggleFiltersOpen: this.toggleFiltersOpen,
+      sortOptions: SORT_OPTIONS,
+      sortLabel: (SORT_OPTIONS.find(o => o.value === this.state.sortValue) || SORT_OPTIONS[0]).label,
+      sortOpen: this.state.sortOpen,
+      sortChevron: this.state.sortOpen ? '▲' : '▼',
+      toggleSortOpen: this.toggleSortOpen,
+      sortMenuOptions: SORT_OPTIONS.map(o => ({ label: o.label, bg: o.value === this.state.sortValue ? 'var(--neutral-100)' : '#fff', _select: () => this.selectSort(o.value) })),
+      badgeOptions: BADGE_OPTIONS,
+      sortValue: this.state.sortValue,
+      onSortChange: this.onSortChange,
+      countText: `${count} Results`,
+      managing: this.state.managing,
+      toggleManaging: this.toggleManagingAndNav,
+      saveView: this.saveView,
+      saveViewLabel: this.state.savedFlash ? 'Saved' : 'Save View',
+      setRootRef: this.setRootRef,
+      shareOpen: this.state.shareOpen,
+      toggleShare: this.toggleShare,
+      exportPdf: this.exportPdf,
+      exportJpg: this.exportJpg,
+      notExporting: !this.state.exporting,
+      manageBtnLabel: this.state.managing ? 'Done Editing' : 'Edit',
+      manageIconFilter: this.state.managing ? 'invert(1)' : 'none',
+      manageBtnVariant: this.state.managing ? 'dark' : 'secondary',
+      addOpen: this.state.addOpen,
+      openAdd: this.openAdd,
+      closeAdd: this.closeAdd,
+      formName: this.state.formName,
+      formPrice: this.state.formPrice,
+      formBadge: this.state.formBadge,
+      onFormNameChange: this.onFormNameChange,
+      onFormPriceChange: this.onFormPriceChange,
+      onFormBadgeChange: this.onFormBadgeChange,
+      formImage: this.state.formImage,
+      formImageValid: typeof this.state.formImage === 'string' && this.state.formImage.startsWith('data:'),
+      formImgDisplay: (typeof this.state.formImage === 'string' && this.state.formImage.startsWith('data:')) ? 'block' : 'none',
+      formImageEmpty: !(typeof this.state.formImage === 'string' && this.state.formImage.startsWith('data:')),
+      onFormImageChange: this.onFormImageChange,
+      submitAdd: this.submitAdd,
+      onHydrantsPage: this.state.currentView === 'collection' && this.state.currentPage === 'hydrants',
+      onAccessoriesPage: this.state.currentView === 'collection' && this.state.currentPage === 'accessories',
+      onPdpView: this.state.currentView === 'pdp',
+      onCollectionView: this.state.currentView === 'collection',
+      setViewCollection: () => this.setView('collection'),
+      setViewPdp: () => this.setView('pdp'),
+      viewCollectionColor: this.state.currentView === 'collection' ? 'var(--water-blue)' : 'var(--water-ink)',
+      viewCollectionWeight: this.state.currentView === 'collection' ? 700 : 500,
+      viewCollectionUnderline: this.state.currentView === 'collection' ? 'var(--water-blue)' : 'transparent',
+      viewPdpColor: this.state.currentView === 'pdp' ? 'var(--water-blue)' : 'var(--water-ink)',
+      viewPdpWeight: this.state.currentView === 'pdp' ? 700 : 500,
+      viewPdpUnderline: this.state.currentView === 'pdp' ? 'var(--water-blue)' : 'transparent',
+      goHome: this.goHome,
+      pdpQty: this.state.pdpQty,
+      incQty: () => this.setPdpQty(1),
+      decQty: () => this.setPdpQty(-1),
+      pdpColors: this.state.pdpColorOptions.map(c => ({
+        ...c,
+        selected: this.state.pdpColor === c.label,
+        borderColor: this.state.pdpColor === c.label ? 'var(--water-blue)' : 'var(--neutral-300)',
+        _select: () => this.setPdpColor(c.label),
+        _editLabel: (e) => this.editPdpColorLabel(c.id, e),
+        _editSwatch: (e) => this.editPdpColorSwatch(c.id, e),
+        _delete: () => this.deletePdpColor(c.id),
+      })),
+      addPdpColor: this.addPdpColor,
+      togglePdpIncluded: this.togglePdpIncluded,
+      togglePdpInstall: this.togglePdpInstall,
+      togglePdpSpecs: this.togglePdpSpecs,
+      togglePdpCad: this.togglePdpCad,
+      pdpIncludedOpen: this.state.pdpOpenIncluded,
+      pdpInstallOpen: this.state.pdpOpenInstall,
+      pdpSpecsOpen: this.state.pdpOpenSpecs,
+      pdpCadOpen: this.state.pdpOpenCad,
+      pdpIncludedToggle: this.state.pdpOpenIncluded ? '\u2212' : '+',
+      pdpInstallToggle: this.state.pdpOpenInstall ? '\u2212' : '+',
+      pdpSpecsToggle: this.state.pdpOpenSpecs ? '\u2212' : '+',
+      pdpCadToggle: this.state.pdpOpenCad ? '\u2212' : '+',
+      pdpEditing: this.state.pdpEditing,
+      pdpEditingOff: !this.state.pdpEditing,
+      togglePdpEditing: this.togglePdpEditing,
+      pdpEditBtnLabel: this.state.pdpEditing ? 'Done Editing' : 'Edit',
+      pdpEditIconFilter: this.state.pdpEditing ? 'invert(1)' : 'none',
+      pdpEditBtnVariant: this.state.pdpEditing ? 'dark' : 'secondary',
+      pdpTitle: this.state.pdpTitle,
+      pdpDesc1: this.state.pdpDesc1,
+      pdpDesc2: this.state.pdpDesc2,
+      pdpSku: this.state.pdpSku,
+      pdpPrice: this.state.pdpPrice,
+      pdpRatingValue: this.state.pdpRatingValue,
+      pdpReviewCount: this.state.pdpReviewCount,
+      pdpAddOnCartLabel: `${this.state.pdpPrice} \u2022 Add to Cart`,
+      editPdpTitle: this.editPdpField('pdpTitle'),
+      editPdpDesc1: this.editPdpField('pdpDesc1'),
+      editPdpDesc2: this.editPdpField('pdpDesc2'),
+      editPdpSku: this.editPdpField('pdpSku'),
+      editPdpPrice: this.editPdpField('pdpPrice'),
+      editPdpRatingValue: this.editPdpField('pdpRatingValue'),
+      editPdpReviewCount: this.editPdpField('pdpReviewCount'),
+      pdpIncludedTitle: this.state.pdpIncludedTitle,
+      pdpIncludedBody: this.state.pdpIncludedBody,
+      pdpInstallTitle: this.state.pdpInstallTitle,
+      pdpInstallBody: this.state.pdpInstallBody,
+      pdpSpecsTitle: this.state.pdpSpecsTitle,
+      pdpSpecsBody: this.state.pdpSpecsBody,
+      pdpCadTitle: this.state.pdpCadTitle,
+      pdpCadBody: this.state.pdpCadBody,
+      editPdpIncludedTitle: this.editPdpField('pdpIncludedTitle'),
+      editPdpIncludedBody: this.editPdpField('pdpIncludedBody'),
+      editPdpInstallTitle: this.editPdpField('pdpInstallTitle'),
+      editPdpInstallBody: this.editPdpField('pdpInstallBody'),
+      editPdpSpecsTitle: this.editPdpField('pdpSpecsTitle'),
+      editPdpSpecsBody: this.editPdpField('pdpSpecsBody'),
+      editPdpCadTitle: this.editPdpField('pdpCadTitle'),
+      editPdpCadBody: this.editPdpField('pdpCadBody'),
+      pdpAddon1: this.state.pdpAddon1,
+      pdpAddon2: this.state.pdpAddon2,
+      pdpAddon3: this.state.pdpAddon3,
+      pdpAddon4: this.state.pdpAddon4,
+      pdpAddon5: this.state.pdpAddon5,
+      editPdpAddon1: this.editPdpField('pdpAddon1'),
+      editPdpAddon2: this.editPdpField('pdpAddon2'),
+      editPdpAddon3: this.editPdpField('pdpAddon3'),
+      editPdpAddon4: this.editPdpField('pdpAddon4'),
+      editPdpAddon5: this.editPdpField('pdpAddon5'),
+      pdpMainNoImage: !(typeof this.state.pdpMainImage === 'string' && this.state.pdpMainImage.startsWith('data:')),
+      pdpMainImgDisplay: (typeof this.state.pdpMainImage === 'string' && this.state.pdpMainImage.startsWith('data:')) ? 'block' : 'none',
+      pdpThumb0Display: (typeof this.state.pdpThumbImages[0] === 'string' && this.state.pdpThumbImages[0].startsWith('data:')) ? 'block' : 'none',
+      pdpThumb1Display: (typeof this.state.pdpThumbImages[1] === 'string' && this.state.pdpThumbImages[1].startsWith('data:')) ? 'block' : 'none',
+      pdpThumb2Display: (typeof this.state.pdpThumbImages[2] === 'string' && this.state.pdpThumbImages[2].startsWith('data:')) ? 'block' : 'none',
+      pdpThumb3Display: (typeof this.state.pdpThumbImages[3] === 'string' && this.state.pdpThumbImages[3].startsWith('data:')) ? 'block' : 'none',
+      pdpThumb0NoImage: !(typeof this.state.pdpThumbImages[0] === 'string' && this.state.pdpThumbImages[0].startsWith('data:')),
+      pdpThumb1NoImage: !(typeof this.state.pdpThumbImages[1] === 'string' && this.state.pdpThumbImages[1].startsWith('data:')),
+      pdpThumb2NoImage: !(typeof this.state.pdpThumbImages[2] === 'string' && this.state.pdpThumbImages[2].startsWith('data:')),
+      pdpThumb3NoImage: !(typeof this.state.pdpThumbImages[3] === 'string' && this.state.pdpThumbImages[3].startsWith('data:')),
+      pdpMainImgRef: (el) => { this.pdpMainImgEl = el; if (el) el.src = (typeof this.state.pdpMainImage === 'string' && this.state.pdpMainImage.startsWith('data:')) ? this.state.pdpMainImage : PIXEL; },
+      replacePdpMainImage: this.replacePdpMainImage,
+      pdpThumbRef0: (el) => { this.pdpThumbEls[0] = el; if (el) el.src = (typeof this.state.pdpThumbImages[0] === 'string' && this.state.pdpThumbImages[0].startsWith('data:')) ? this.state.pdpThumbImages[0] : PIXEL; },
+      pdpThumbRef1: (el) => { this.pdpThumbEls[1] = el; if (el) el.src = (typeof this.state.pdpThumbImages[1] === 'string' && this.state.pdpThumbImages[1].startsWith('data:')) ? this.state.pdpThumbImages[1] : PIXEL; },
+      pdpThumbRef2: (el) => { this.pdpThumbEls[2] = el; if (el) el.src = (typeof this.state.pdpThumbImages[2] === 'string' && this.state.pdpThumbImages[2].startsWith('data:')) ? this.state.pdpThumbImages[2] : PIXEL; },
+      pdpThumbRef3: (el) => { this.pdpThumbEls[3] = el; if (el) el.src = (typeof this.state.pdpThumbImages[3] === 'string' && this.state.pdpThumbImages[3].startsWith('data:')) ? this.state.pdpThumbImages[3] : PIXEL; },
+      replacePdpThumb0: (e) => this.replacePdpThumbImage(0, e),
+      replacePdpThumb1: (e) => this.replacePdpThumbImage(1, e),
+      replacePdpThumb2: (e) => this.replacePdpThumbImage(2, e),
+      replacePdpThumb3: (e) => this.replacePdpThumbImage(3, e),
+      accessoryPageTitle: this.state.selectedAccessoryCategory || 'Accessories',
+      accessoryTitleHasAmp: splitAmp(this.state.selectedAccessoryCategory || 'Accessories').hasAmp,
+      accessoryTitleNoAmp: splitAmp(this.state.selectedAccessoryCategory || 'Accessories').noAmp,
+      accessoryTitleBefore: splitAmp(this.state.selectedAccessoryCategory || 'Accessories').beforeAmp,
+      accessoryTitleAfter: splitAmp(this.state.selectedAccessoryCategory || 'Accessories').afterAmp,
+      accessoryProducts: Array.from({ length: 8 }, (_, i) => ({
+        name: `${this.state.selectedAccessoryCategory || 'Accessories'} Item ${i + 1}`,
+        price: `$${(29 + i * 12)}.00`,
+        ...splitAmp(`${this.state.selectedAccessoryCategory || 'Accessories'} Item ${i + 1}`),
+      })),
+      navItems: this.state.navItems.map(n => {
+        const hasMenu = n.label === 'Accessories';
+        const isHydrants = n.label === 'Hydrants & Valves';
+        const isActive = (isHydrants && this.state.currentPage === 'hydrants') || (hasMenu && this.state.currentPage === 'accessories');
+        const isOpen = hasMenu && this.state.openNavMenu === n.id;
+        const amp = splitAmp(n.label);
+        return {
+          ...n,
+          ...amp,
+          color: isActive ? 'var(--water-blue)' : 'var(--water-ink)',
+          fontWeight: (isActive || isOpen) ? 700 : 500,
+          underlineColor: (isActive || isOpen) ? 'var(--water-blue)' : 'transparent',
+          hasMenu,
+          menuOpen: isOpen,
+          menuCursor: (hasMenu || isHydrants) ? 'pointer' : 'default',
+          chevronTransform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+          inputWidth: Math.max(70, n.label.length * 9),
+          _delete: () => this.deleteNavItem(n.id),
+          _edit: (e) => this.editNavItem(n.id, e.target.value),
+          _toggleMenu: hasMenu ? (() => this.toggleNavMenu(n.id)) : (isHydrants ? this.goHome : (() => {})),
+        };
+      }),
+      accessoriesMenuOpen: this.state.openNavMenu === (this.state.navItems.find(n => n.label === 'Accessories') || {}).id,
+      accessoryCategories: ACCESSORIES_CATEGORIES.map(label => ({
+        label,
+        ...splitAmp(label),
+        color: this.state.selectedAccessoryCategory === label && this.state.currentPage === 'accessories' ? 'var(--water-blue)' : 'var(--water-ink)',
+        _select: () => this.selectAccessoryCategory(label),
+      })),
+      navEditing: this.state.navEditing,
+      navEditingOff: !this.state.navEditing,
+      navEditBtnVariant: this.state.navEditing ? 'dark' : 'secondary',
+      toggleNavEditing: this.toggleNavEditing,
+      addNavItem: this.addNavItem,
+    };
+  }
+}
+</script>
+</body>
+</html>
